@@ -1,0 +1,381 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "AC_admin_guide.ent">
+%BOOK_ENTITIES;
+]>
+
+
+
+<chapter id="chap-tomcatConfigure">
+
+    <title>Tomcat Web Server Configuration [Not mandatory]</title>
+
+<para>
+This chapter explains how to configure tomcat web server to support 
+</para>
+<itemizedlist>
+<listitem> 
+<para>SSL/TLS using APR (Apache Portable Runtime) native support</para>
+</listitem> 
+<listitem> 
+<para>proxies</para> 
+</listitem> 
+<listitem> 
+<para>opencadc name-password login.</para> 
+</listitem> 
+</itemizedlist>
+
+<para>
+Reference guide for tomcat SSL/TLS configuration is:
+</para>
+<para>
+<ulink url="https://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html">https://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html</ulink>
+</para>
+
+
+<section id="SSL_TLS_introduction">
+
+    <title>Introduction to SSL/TLS</title>
+
+<para>
+    Transport Layer Security (TLS) and its predecessor Secure 
+Sockets Layer (SSL), are  cryptographic protocols which allow 
+web browsers and web servers to communicate in a secure way. 
+This means that the data being sent is encrypted by one side, 
+transmitted and then decrypted by the other side before processing. 
+This is a two-way process, meaning that both the server and 
+the browser encrypt all traffic before sending out data.
+</para>
+
+<para>
+    SSL/TLS protocol requires Authentication. During the initial 
+attempt to communicate with a web server over a SSL/TLS connection, 
+the server will present to the web browser with a set of credentials, 
+in the form of a "Certificate", proving the site it is who and what 
+it claims to be. The "Client Authentication" can also be required, i.e.
+the server may also request a certificate from the web browser, 
+as proof that it is who it claimis to be.  
+</para>
+
+</section>
+
+<section id="SSL_TLS_certificates">
+
+    <title>Server Certificate</title>
+
+<para>
+    In order to implement SSL/TLS, a web server must have an associated 
+certificate for each external interface (IP address) that accepts 
+secure connections. The certificate is like a "digital passport",
+it states that its owner is who it should be.  
+</para>
+
+<para>
+For the certificate to work in the visitors browsers without 
+warnings, it needs to be cryptographically signed by a trusted third party. 
+These third parties are called Certificate Authorities (CAs). 
+</para>
+
+<para>
+A signed certificate can be obtained asking to a Certification
+Authority following the instructions provided by the CA itself.
+A range of CAs is available and some CA offers 
+certificates free of charge.
+</para>
+
+<para>
+We need a server 
+certificate to implement the server side SSL/TLS
+configuration. For this reason, we will ask a certificate to
+a certification authority which release three files: 
+</para>
+<screen>
+SERVER-CERT.pem
+SERVER-KEY.pem
+CA_CERT_CHAIN.pem
+</screen>
+<para>
+Sometimes the certificate file is provided in .p12 format.
+In this case the two files .crt(.pem) and .key can be
+obtained using openssl commands:
+</para>
+<screen>
+openssl pkcs12  -nocerts -in cert.p12 -out certkey.pem
+openssl pkcs12 -clcerts  -nokeys -in cert.p12 -out certcrt.pem
+</screen>
+<para>
+The Certification Authority Certificate chain is a single file in case of
+a root CA. It can be a concatenation of more files in case of subordinate CAs.
+A subordinate CA is a CA that has been issued a certificate by another CA 
+(root CA). There can be more levels of subordinate CAs.
+In case of a root CA with two layers of subordinate CAs and server certificate 
+released by the second level subordinate CA, e.g.
+</para>
+<screen>
+    Root Certificate (root-cacert.pem)
+    Sub CA 1 (subCA1-cacert.pem)
+    Sub CA 2 (subCA2-cacert.pem)
+    Server Certificate (my_server_cert.p12)
+</screen> 
+<para>
+the CA certificate chain file is obtained chaining the files
+in the order below:
+</para>
+<screen>
+cat subCA2-cacert.pem subCA1-cacert.pem root-cacert.pem >> CA_CERT_CHAIN.pem
+</screen>
+<para>
+Be careful that the order matters. The right order is the inverse one:
+</para>
+<screen>
+ Intermediate 3, Intermediate 2, Intermediate 1, Root Certificate.
+</screen>
+<para>
+After combining the ASCII data into one file, the certificate chain validity  
+for sslserver usagei can be verified issuing:
+</para>
+<screen>
+openssl verify -verbose -purpose sslserver -CAfile MY_CA_CERT_CHAIN.pem MY-SERVER-CERT.pem
+</screen>
+
+</section>
+
+
+<section id="SSL_TLS_certificates_bundle">
+
+    <title>Certificates bundle</title>
+
+<para>
+In order to support the client authentication, tomcat must
+know the Certificates of Certification Authorities (CAs) whose 
+clients he deal with. This is done configuring a certificate
+bundle. The best way is to configure tomcat to use the 
+system cartificate bundle adding to it all the needed CAs certificates.
+The default system cartificate bundle is: 
+</para>
+<screen>
+/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+</screen>
+<para>
+The instructions to modify the system ca-bundle provided
+by the CentOS 7 distribution are below: 
+</para>
+<screen>
+cat /etc/pki/ca-trust/extracted/pem/README
+This directory /etc/pki/ca-trust/extracted/pem/ contains 
+CA certificate bundle files which are automatically created
+based on the information found in the
+/usr/share/pki/ca-trust-source/ and /etc/pki/ca-trust/source/
+directories.
+
+All files are in the BEGIN/END CERTIFICATE file format, 
+as described in the x509(1) manual page.
+
+Distrust information cannot be represented in this file format,
+and distrusted certificates are missing from these files.
+
+If your application isn't able to load the PKCS#11 module p11-kit-trust.so,
+then you can use these files in your application to load a list of global
+root CA certificates.
+
+Please never manually edit the files stored in this directory,
+because your changes will be lost and the files automatically overwritten,
+each time the update-ca-trust command gets executed.
+
+Please refer to the update-ca-trust(8) manual page for additional information.
+</screen>
+
+<para>The steps to perform  are slightly different (the target directory where 
+to copy the certificate files is <command>/etc/pki/ca-trust/source/anchors/</command>.
+Using our example:</para>
+<screen>
+cp subCA2-cacert.pem /etc/pki/ca-trust/source/anchors/
+cp subCA1-cacert.pem /etc/pki/ca-trust/source/anchors/
+cp root-cacert.pem /etc/pki/ca-trust/source/anchors/
+update-ca-trust extract
+</screen>
+
+<para>
+A wide set of Certification Authorities can be supported.
+The CA certificates can be added using rpm distributions.
+Two useful reference links with instructions on how to 
+install Certification Authorities are:
+</para>
+<itemizedlist>
+ <listitem>
+<para>
+<ulink url="https://wiki.egi.eu/wiki/EGI_IGTF_Release">EGI IGTF Release</ulink>
+</para>
+</listitem>
+ <listitem>
+<para>
+<ulink url="https://twiki.grid.iu.edu/bin/view/Documentation/Release3/InstallCertAuth">
+Open Science Grid: Installing Certificate Authorities Certificates and related RPMs 
+</ulink>
+</para>
+</listitem>
+</itemizedlist>
+
+<para>
+Here a quick reference to install EGI IGTF distribution and 
+to populate the system ca-bundele with the newly installed certificates:
+</para>
+<screen>
+wget -O /etc/yum.repos.d/EGI-trustanchors.repo http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustanchors.repo 
+yum install ca-policy-egi-core
+cd /etc/grid-security/certificates/
+for i in `ls *.pem` do; ln -s /etc/grid-security/certificates/$i /etc/pki/ca-trust/source/anchors/$i`; done
+update-ca-trust extract
+</screen>
+
+</section>
+
+
+<section id="SSL_TLS_tomcat_configuration">
+
+    <title>SSL tomcat configuration</title>
+
+<para>
+ Tomcat can use two different implementations of SSL:
+</para>
+<itemizedlist>
+ <listitem>
+<para>
+    the JSSE implementation provided as part of the Java runtime (since 1.4)
+</para>
+ </listitem>
+ <listitem>
+<para>
+    the APR implementation, which uses the OpenSSL engine by default.
+</para>
+ </listitem>
+</itemizedlist>
+<para>
+This guide explains how to configure the APR implementation.
+</para>
+
+<para>
+The APR connector can be configured
+in <code>$TOMCAT_HOME/conf/server.xml</code>, as below:
+</para>
+<screen>
+&lt;Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+           maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+           sslProtocol="TLS" />
+
+&lt;Connector port="80" protocol="HTTP/1.1"
+           connectionTimeout="20000"
+           redirectPort="443" /&gt;
+
+&lt;Connector port="443" protocol="org.apache.coyote.http11.Http11AprProtocol"
+          maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+          SSLCertificateFile="/opt/tomcat/conf/tls/MY-SERVER-CERT.pem"
+          SSLCertificateKeyFile="/opt/tomcat/conf/tls/MY-SERVER-KEY.key"
+          SSLCertificateChainFile="/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+          SSLCACertificateFile="/etc/pki/tls/certs/ca-bundle.crt"
+          SSLVerifyClient="require" SSLVerifyDepth="10"
+          SSLProtocol="ALL"
+         /&gt;
+</screen>
+<para>
+Where
+</para>
+<itemizedlist>
+ <listitem>
+<para>
+<emphasis role="bold">MY-SERVER-CERT.pem</emphasis> and <emphasis role="bold">MY-SERVER-KEY.key</emphasis> are the server certificate
+</para>
+ </listitem>
+ <listitem>
+<para>
+<emphasis role="bold">MY_CA_CERT_CHAIN.pem</emphasis> is the CA certificate file chain as explained above.
+</para>
+ </listitem>
+ <listitem>
+<para>
+<emphasis role="bold">ca-bundle.crt</emphasis> is the system default ca-bundle enriched with the installed
+certificates, as explained above.
+</para>
+ </listitem>
+</itemizedlist>
+<para>
+The defaul OpenSSL engine, can be used configuring it in
+<command>${TOMCAT_HOME}/conf/server.xml</command>:
+</para>
+<screen>
+&lt;Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" /&gt;
+</screen>
+<para>
+the APR library must be available (see tomcat installation guide for instructions).
+</para>
+
+<para>
+To check the SSL/TLS configuration and verify the set of supported CA, use:
+</para>
+<screen>
+openssl s_client -showcerts  -connect &lt;YOUR_SERVER_HOST_FQDN&gt;:443 -debug
+</screen>
+
+</section>
+
+<section id="sect-enable-ssl-debug">
+    <title>Enable SSL debug</title>
+<para>
+To enable the SSL debug output in catalina.out, set
+</para>
+<screen>
+JAVA_OPTS="$JAVA_OPTS -Djavax.net.debug=ssl -Djava.net.debug=record,keygen,handshake"
+</screen>
+<para>in <command>${TOMCAT_HOME/bin/catalina.sh</command>
+</para>
+
+</section>
+
+
+<section id="sect-proxy-usage">
+    <title>Enable proxy usage in tomcat</title>
+<para>
+To enable the proxy support in Tomcat, it must be defined an 
+environment variable OPENSSL_ALLOW_PROXY_CERTS and set it 
+equals to 1. This can be achieved adding 
+</para>
+<screen>
+export OPENSSL_ALLOW_PROXY_CERTS=1
+</screen>
+<para>
+at the beginning of <command>${TOMCAT_HOME}/bin/catalina.sh</command> 
+or in the systemd service script
+or in a file <command>${TOMCAT_HOME}/bin/setenv.sh</command>.
+</para>
+
+</section>
+
+<section id="sect-enable-login-pass-auth">
+    <title>Enable login-password authentication cadc software specific</title>
+
+<para>
+The login-password authentication in the cadc software is provided through a 
+plugin for Tomcat 7. The authentication mechanism will call the access control web service 
+(in module cadc-access-control-server) to see if the credentials are correct.
+</para>
+<para>
+This plugin is obtained compiling the <command>ac/cadc-tomcat</command> 
+module. It must be install it in the tomcat installation:
+</para>
+<screen>
+cp cadc-tomcat-&lt;version&gt;.jar ${TOMCAT_HOME}/lib
+</screen>
+<para>
+and configured adding to the file 
+<command>${TOMCAT_HOME}/conf/server.xml</command>
+a <command>Realm</command> element as below:
+</para>
+<screen>
+     &lt;Realm className="ca.nrc.cadc.tomcat.CadcBasicAuthenticator"
+            loginURL="http://YOUR_AC_SERVER_HOST/ac/login" /&gt;
+</screen>
+
+</section>
+
+</chapter>
+

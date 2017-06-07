@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "AC_admin_guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="chap-tomcatInstall">
+    <title>Tomcat Web Server Installation</title>
+<para>
+This chapter explains how to install Tomcat 7, the packages needed to 
+support SSL/TLS and how to run it on privileged ports. the guide is
+referred to the centOS 7 distribution.  
+</para>
+
+<section id="sec_tomcat_install">
+    <title>Tomcat Download and Install</title>
+
+<para>
+Install epel repository:
+</para>
+  <itemizedlist>
+   <listitem>
+<screen>
+yum install epel-release
+</screen>
+    </listitem>
+  </itemizedlist>
+<para>
+Install tomcat server:
+</para>
+  <itemizedlist>
+    <listitem>
+<screen>
+yum install tomcat -y
+</screen>
+    </listitem>
+  </itemizedlist>
+<para>
+Install APR native support to add SSL/TLS support:
+</para>
+  <itemizedlist>
+    <listitem>
+<screen>
+yum install openssl-devel -y
+yum install tomcat-native -y
+</screen>
+    </listitem>
+  </itemizedlist>
+<para>
+Install the tomcat-jsvc package. It allows tomcat process 
+to bind to ports 80 and 443 running as non privileged user.
+</para>
+  <itemizedlist>
+    <listitem>
+<screen>
+yum install tomcat-jsvc -y
+</screen>
+    </listitem>
+  </itemizedlist>
+<para>
+The server, as installed until now, does not serve any content. 
+Some content can be placed into the server installing optional 
+packages:
+</para>
+  <itemizedlist>
+    <listitem>
+<screen>
+yum install tomcat-admin-webapps.noarch 
+yum install tomcat-docs-webapp.noarch 
+yum install tomcat-javadoc.noarch 
+yum install tomcat-systemv.noarch 
+yum install tomcat-webapps.noarch
+</screen>
+    </listitem>
+  </itemizedlist>
+
+</section>
+
+<section id="sec_tomcat_run">
+
+    <title>Run tomcat web server</title>
+
+<para>Enable tomcat to start at boot time:</para>
+<screen>
+systemctl enable tomcat
+</screen>
+
+<para>Start tomcat:</para>
+<screen>
+systemctl start tomcat
+</screen>
+
+</section>
+
+
+<section id="Section_3">
+    <title>Run tomcat web server as tomcat user on port 80 or 443 using JSVC</title>
+
+<para>Using jsvc, the tomcat web server can be run as tomcat user on port 80 or 443:</para>
+
+<para>Enable tomcat-jsvc to start at boot time:</para>
+<screen>
+systemctl enable tomcat-jsvc
+</screen>
+
+<para>Start tomcat-jsvc:</para>
+<screen>
+systemctl start tomcat-jsvc  
+</screen>
+
+</section>
+
+</chapter>
+

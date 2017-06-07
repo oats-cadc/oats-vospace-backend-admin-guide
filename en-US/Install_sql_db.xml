@@ -1,0 +1,180 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "AC_admin_guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="chap-install_db">
+<title>SQL database installation</title>
+<para>
+The VOSpace  backend service requires a SQL database as persistence layer.
+At CADC (Canadian Astronomy Data Center) Sybase or PostgreSQL, at INAF-OATs
+MySql or MariaDB are used. This points out the high level of configurability of the 
+service.  This guide provides installation instructions for 
+MySql and MariaDB. One of the two has to be choosen by the user. 
+Main documentation references:
+</para>
+<itemizedlist>
+<listitem>
+<para>
+<ulink url="https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-centos-7">https://www.digitalocean.com/community/tutorials/how-to-install-mariadb-on-centos-7</ulink>
+</para>
+</listitem>
+<listitem>
+<para>
+<ulink url="https://www.linode.com/docs/databases/mariadb/how-to-install-mariadb-on-centos-7">https://www.linode.com/docs/databases/mariadb/how-to-install-mariadb-on-centos-7</ulink>
+</para>
+</listitem>
+<listitem>
+<para>
+<ulink url="https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-centos-7">https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-centos-7</ulink>
+</para>
+</listitem>
+<listitem>
+<para>
+<ulink url="https://www.linode.com/docs/databases/mysql/how-to-install-mysql-on-centos-7">https://www.linode.com/docs/databases/mysql/how-to-install-mysql-on-centos-7</ulink>
+</para>
+</listitem>
+</itemizedlist>
+
+<section id="sec-install_mariadb">
+<title>MariaDB installation step by step</title>
+<para>
+MariaDB is included in the CentOS 7 distribution. Steps to install it:
+</para>
+<para> 
+Update the system:
+</para>
+<screen>
+yum update
+</screen>
+<para>
+install MariaDB server:
+</para>
+<screen>
+yum install mariadb-server
+</screen>
+<para>
+start MariaDB server:
+</para>
+<screen>
+systemctl start mariadb
+</screen>
+<para>
+Check if the service correctly started:
+</para>
+<screen>
+systemctl status mariadb
+</screen>
+<para>
+enable MariaDB server start at boot time:
+</para>
+<screen>
+systemctl enable mariadb
+</screen>
+<para>
+To address several security concerns in a default MariaDB installation 
+a script is provided: <command>mysql_secure_installation</command>. 
+It is recommended to run it. It will ask:
+<itemizedlist>
+<listitem>
+<para>
+If you want change MariaDB root password
+</para>
+</listitem>
+<listitem>
+<para>
+If you want remove anonymous user accounts
+</para>
+</listitem>
+<listitem>
+<para>
+If you want disable root logins outside of localhost
+</para>
+</listitem>
+<listitem>
+<para>
+If you want remove test databases
+</para>
+</listitem>
+</itemizedlist>
+It is recommended to answer yes to all these options.
+</para>
+
+</section>
+
+	
+<section id="sec-install_mysqldb">
+<title>Mysql installation step by step</title>
+<para>
+Mysql is not included in the CentOS 7 distribution and it must 
+be installed from the community repository. Steps to install it:
+</para>
+
+<para>
+Update the system:
+</para>
+<screen>
+yum update
+</screen>
+<para>
+Download mysql rpm from the community repository:
+</para>
+<screen>
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+</screen>
+<para>
+install the downloaded rpm:
+</para>
+<screen>
+yum install mysql-community-release-el7-5.noarch.rpm
+</screen>
+<para>
+start mysql server:
+</para>
+<screen>
+systemctl start mysqld
+</screen>
+<para>
+Check if the service correctly started:
+</para>
+<screen>
+systemctl status mysqld
+</screen>
+<para>
+enable MySql server start at boot time:
+</para>
+<screen>
+systemctl enable mysqld
+</screen>
+<para>
+To address several security concerns in a default MariaDB installation
+a script is provided: <command>mysql_secure_installation</command>.
+It is recommended to run it. It will ask:
+<itemizedlist>
+<listitem>
+<para>
+If you want change MariaDB root password
+</para>
+</listitem>
+<listitem>
+<para>
+If you want remove anonymous user accounts
+</para>
+</listitem>
+<listitem>
+<para>
+If you want disable root logins outside of localhost
+</para>
+</listitem>
+<listitem>
+<para>
+If you want remove test databases
+</para>
+</listitem>
+</itemizedlist>
+It is recommended to answer yes to all these options.
+</para>
+</section>
+
+</chapter>
+

@@ -1,0 +1,304 @@
+<chapter id="chap-vospace-backend-sw-repo">
+<title>The INAF-OATs vospace-backend service</title>
+
+<para>The INAF-OATs vospace-backend open source software is 
+available on an open repository: 
+</para>
+<screen>
+https://www.ict.inaf.it/gitlab/OATS-CADC/oats-vospace-backend
+https://www.ict.inaf.it/gitlab/OATS-CADC/oats-vospace-backend-web
+</screen>
+
+
+<section id="sec-vospace-backend_description">
+<title>INAF-OATs vospace-backend software description</title>
+
+<para>
+The vospace-backend software is a RESTful web service
+implementation providing a storage service management
+to interface a VOSpace interface implementation with
+a storage solution. Main features of this service:
+</para>
+<itemizedlist>
+<listitem>
+<para>
+provides an implementation of VOSpace Node persistence:
+</para>
+<screen>
+cadc-vos-server/src/main/java/ca/nrc/cadc/vos/
+                                server/DatabaseNodePersistence.java
+</screen>
+</listitem>
+<listitem>
+<para>
+provides an implementation of UWS Job persistence:
+</para>
+<screen>
+uws/cadc-uws-server/src/main/java/ca/nrc/cadc/uws/
+                                server/DatabaseJobPersistence.java
+</screen>
+</listitem>
+<listitem>
+<para>
+provides an implementation of:
+</para>
+<screen>
+cadc-vos-server/src/main/java/ca/nrc/cadc/vos/
+                                 server/transfers/TransferGenerator.java
+</screen>
+<para>
+An interface to vospace storage back-end for provided transfer details
+in the transfer negotiation process. 
+Given the trensfer details, this implementation returns a list of URLs to 
+support the most general use case
+in which the storage system has multiple copies of a file or multiple locations
+in which a file can be saved.
+Returning only one URL in the list is a perfectly normal response though.
+</para>
+</listitem>
+<listitem>
+<para>
+has a plug-in architecture allowing to load at run-time a configurable physical
+storage support, simply implementing the abstract class
+</para>
+<screen>
+vospace-backend/blob/master/src/main/java/it/inaf/oats/
+                    vospacebackend/implementation/VOSpaceBackend.java
+</screen>
+<para>
+the current vospace-backend implementation provides a posix file
+system based storage plug-in, as an example.
+</para>
+</listitem>
+</itemizedlist>
+
+</section>
+
+<section id="sec-vospace-backend_sw_repo">
+<title>INAF-OATs vospace-backend software repository</title>
+
+<para>A copy of the pace-backend can be obtained by:</para>
+<screen>
+git clone https://www.ict.inaf.it/gitlab/OATS-CADC/oats-vospace-backend.git
+</screen>
+<para>This guide is relative to the version tagged as v0.2.1</para>
+<para>To work with it, issue:</para>
+<screen>
+git clone https://www.ict.inaf.it/gitlab/OATS-CADC/oats-vospace-backend.git
+git checkout tags/v0.2.1
+</screen>
+<para>or to work on a new local branch:</para>
+<screen>
+git clone https://www.ict.inaf.it/gitlab/OATS-CADC/oats-vospace-backend.git
+git checkout tags/v0.2.1 -b &lt;branch-name&gt;
+</screen>
+<para>Same steps for oats-vospace-backend-web</para>
+
+</section>
+
+<section id="sec-vospace-backend_sw_implementation">
+<title>INAF-OATs vospace-backend software implementation</title>
+
+<para>
+The implementation provided by the INAF OATS-CADC repository in the
+oats-vospace-backend plus oats-vospace-backend-web modules
+is an example implementation. Using MySql or MaraDb and mantaining 
+the database name  equals to "cadctest", this implementation can be 
+used as is.  
+</para>
+
+</section>
+
+
+<section id="sec-vospace-backend_sw_download">
+<title>INAF-OATs vospace-backend software build</title>
+
+<para>
+The oats-vospace-backend and oats-vospace-backend-web software modules 
+can be easily built using gradle (a build.gradle 
+file is included in each module).
+</para>
+<para>
+To build versus the newer library version published in
+maven central repository, the build.gradle file must contain 
+cadc dependencies written as:
+</para>
+<screen>
+compile 'org.opencadc:cadc-log:1.+'
+</screen>
+<para>
+To build using a local build of cadc libraries, the file must contain
+cadc dependencies written as:
+</para>
+<screen>
+compile files('/&lt;local-path&gt;/core/cadc-log/build/libs/cadc-log.jar')
+</screen>
+<para>The right order to build opencadc libraries locally is:</para>
+<itemizedlist>
+<listitem>
+<screen>
+core/cadc-util
+</screen>
+</listitem>
+<listitem>
+<screen>
+core/cadc-log
+</screen>
+</listitem>
+<listitem>
+<screen>
+ac/cadc-tomcat
+</screen>
+</listitem>
+<listitem>
+<screen>
+reg/cadc-registry
+</screen>
+</listitem>
+<listitem>
+<screen>
+reg/cadc-vosi
+</screen>
+</listitem>
+<listitem>
+<screen>
+uws/cadc-uws
+</screen>
+</listitem>
+<listitem>
+<screen>
+uws/cadc-uws-server
+</screen>
+</listitem>
+<listitem>
+<screen>
+cdp/cadc-cdp
+</screen>
+</listitem>
+<listitem>
+<screen>
+cdp/cadc-cdp-server
+</screen>
+</listitem>
+<listitem>
+<screen>
+ac/cadc-access-control
+</screen>
+</listitem>
+<listitem>
+<screen>
+ac/cadc-access-control-server
+</screen>
+</listitem>
+<listitem>
+<screen>
+ac/cadc-access-control-admin
+</screen>
+</listitem>
+<listitem>
+<screen>
+ac/cadc-access-control-identity
+</screen>
+</listitem>
+<listitem>
+<screen>
+cdp/cadc-vos
+</screen>
+</listitem>
+<listitem>
+<screen>
+cdp/cadc-vos-server
+</screen>
+</listitem>
+<listitem>
+<screen>
+oatsrestlet
+</screen>
+</listitem>
+<listitem>
+<screen>
+oats-vospace-backend
+</screen>
+</listitem>
+
+</itemizedlist>
+
+</section>
+
+
+
+<section id="sec-vospace-backend_deploy">
+<title>INAF-OATs vospace-backend Service deployment</title>
+
+<para>
+The VOSpace Service deployment package can be obtained issuing:
+</para>
+<screen>
+git clone https://www.ict.inaf.it/gitlab/OATS-CADC/oats-vospace-backenad-web.git
+</screen>
+<para>
+Both the vospace-backend and vospace-backend-web repositories contain some 
+files to customize: 
+</para>
+<screen>
+oats-vospace-backend-web/src/main/webapp/META-INF/context.xml.template
+oats-vospace-backend/src/main/sql/create_vospace_backend.sql.template
+oats-vospace-backend/src/main/resources/RsaSignaturePub.key.template
+oats-vospace-backend/src/main/resources/RsaSignaturePriv.key.template
+oats-vospace-backend/src/main/resources/VOSpace.properties.template
+oats-vospace-web/build.gradle.template
+</screen>
+<para>
+Each template file contains comments/instructions on how to customize it,
+except build.gradle.template which can be customized vs. maven central hosted 
+or local libraries, as previously described in
+<xref linkend="sec-vospace-backend_sw_download"/>.
+</para>
+<para>
+The files context.xml.template and create_vospace_db.sql.template contain
+database connection parameters, so they must be customized accordingly
+to the elected persistence service and its configuration.
+</para>
+<para>
+The file VOSpaces.properties is used to define the vospace-backend specific
+parameters, as its URL and the object
+implementing the specific VOSpace backend (abstract class VOSpaceBackend
+implementation). This file must be placed iin a subdirectory "config" of 
+the home directory of the user running tomcat. 
+</para>
+<para>
+The package oats-vospace-backend-web compilation produces the 
+<command>VOSpaceBackend.war</command> file. It
+can be deployed issuing:</para>
+<screen>
+systemctl stop tomcat
+cp vospace.war $TOMCAT_HOME/webapps
+systemctl start tomcat
+</screen>
+<para>
+If some customization is done in the file contained in the deployment 
+location, be careful that the expected behavior of Tomcat is to
+treat the .war file deletion as a request to redeploy or undeploy 
+the application.  
+So, if the war file is deleted until tomcat is
+running, the application is undeployed (removed) by tomcat.
+</para>
+<para>
+If tomcat is stopped before deleting WAR file and started only 
+after that, the application will not be undeployed.
+</para>
+
+</section>
+
+<section id="sec-vospace_operation">
+<title>INAF-OATs vospace-backend Service operations</title>
+
+<para>
+In the current implementation the operation of the vospace-backend
+service requires the sharing of the same database between vospace
+and vospace-backend.
+</para>
+
+</section>
+
+</chapter>
