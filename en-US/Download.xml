@@ -222,6 +222,12 @@ oats-vospace-backend
 </listitem>
 
 </itemizedlist>
+<para>
+The software for oatsrestlet is available at:
+</para>
+<screen>
+https://www.ict.inaf.it/gitlab/OATS-CADC/oats-restlet
+</screen>
 
 </section>
 
