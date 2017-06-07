@@ -59,9 +59,9 @@ RESTful interface.
         </para>
 
 	<section id="sect-Requirements">
-		<title>Requirements and recomendations</title>
+		<title>Requirements and recommendations</title>
                 <para>
-                Prerequisites and recomendations to run the VOSpace Service are: 
+                Prerequisites and recommendations to run the VOSpace Service are: 
                 </para>
                 <itemizedlist>
                     <listitem>
